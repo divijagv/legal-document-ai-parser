@@ -77,7 +77,19 @@ elements.copyBtn.addEventListener('click', () => {
 function handleFileSelect(file) {
     if (!file) return;
     state.file = file;
-    elements.fileName.textContent = file.name;
+
+    // Safety check: Avoid duplicate extensions in display (e.g. .pdf.pdf)
+    let displayName = file.name;
+    if (displayName.toLowerCase().endsWith('.pdf.pdf')) {
+        displayName = displayName.slice(0, -4);
+    } else if (displayName.toLowerCase().endsWith('.png.png')) {
+        displayName = displayName.slice(0, -4);
+    } else if (displayName.toLowerCase().endsWith('.jpg.jpg') || displayName.toLowerCase().endsWith('.jpeg.jpeg')) {
+        const ext = displayName.toLowerCase().endsWith('.jpeg.jpeg') ? '.jpeg' : '.jpg';
+        displayName = displayName.slice(0, -ext.length);
+    }
+
+    elements.fileName.textContent = displayName;
     elements.fileInfo.classList.remove('hidden');
     elements.dropZone.classList.add('hidden');
     updateAnalyzeButton();
