@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Doc Parser | Premium AI Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <header>
+            <h1>Legal Document <span class="gradient-text">Parser</span></h1>
+            <p class="subtitle">Secure, AI-powered extraction of legal subpoenas and summons.</p>
+        </header>
+
+        <main>
+            <section id="setup-section" class="card">
+                <h2><span class="icon">🔑</span> API Configuration</h2>
+                <div class="input-group">
+                    <label for="api-key">Gemini API Key</label>
+                    <input type="password" id="api-key" placeholder="Enter your Google API Key...">
+                    <p class="hint">Your key is stored locally in your browser and never sent to our servers.</p>
+                </div>
+            </section>
+
+            <section id="upload-section" class="card">
+                <h2><span class="icon">📄</span> Document Upload</h2>
+                <div id="drop-zone" class="drop-zone">
+                    <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg">
+                    <div class="drop-zone-content">
+                        <span class="upload-icon">📤</span>
+                        <p>Drag & drop your document or <strong>click to browse</strong></p>
+                        <span class="file-types">Supports PDF, Image, Text</span>
+                    </div>
+                </div>
+                <div id="file-info" class="file-info hidden">
+                    <span class="file-name"></span>
+                    <button id="remove-file" class="btn-icon">✕</button>
+                </div>
+                <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
+            </section>
+
+            <section id="status-section" class="card hidden">
+                <h2><span class="icon">⚡</span> Analysis Progress</h2>
+                <div class="status-steps">
+                    <div class="step" data-step="upload">
+                        <div class="step-dot"></div>
+                        <span>Uploading Document</span>
+                    </div>
+                    <div class="step" data-step="parse">
+                        <div class="step-dot"></div>
+                        <span>AI Parsing...</span>
+                    </div>
+                </div>
+                <div class="loader-bar">
+                    <div class="loader-progress"></div>
+                </div>
+            </section>
+
+            <section id="result-section" class="card hidden">
+                <div class="card-header">
+                    <h2><span class="icon">📊</span> Analysis Result</h2>
+                    <button id="copy-json" class="btn-secondary">Copy JSON</button>
+                </div>
+                <div class="result-container">
+                    <pre id="json-output"></pre>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 LegalDoc AI. Secure & Private.</p>
+        </footer>
+    </div>
+
+    <!-- SDK for Gemini API -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
