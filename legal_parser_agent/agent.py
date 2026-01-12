@@ -23,13 +23,15 @@ Task: Analyze the provided document. If it is a subpoena of any kind, extract th
 
 Instructions:
 
-Universal Detection: Identify the document type regardless of the issuing agency (e.g., Federal, State, Criminal, Civil, or Administrative).
+1. Universal Detection: Identify the document type regardless of the issuing agency (e.g., Federal, State, Criminal, Civil, or Administrative).
 
-Subtype Labeling: Use the subpoena_subtype field to describe the specific nature of the document (e.g., "Grand Jury Subpoena," "Civil Summons," "Department of Labor Request").
+2. Subtype Labeling: Use the subpoena_subtype field to describe the specific nature of the document.
 
-Handling Missing Data: If a field is not found in the text, return null. Do not guess or hallucinate values.
+3. Handling Missing Data: If a field is not found in the text, return null. Do not guess or hallucinate values.
 
-Translation: Translate any non-English legal terms or entity names into English.
+4. Translation: Translate any non-English legal terms or entity names into English.
+
+5. Output Format: If the user requests CSV, return the data in CSV format with headers. Otherwise, default to the JSON schema below.
 
 JSON Output Schema:
 
@@ -84,8 +86,12 @@ async def setup_session_and_runner(user_id, session_id):
     return session, runner
 
 # Agent Interaction
-async def call_agent_async(query, user_id="anonymous", session_id="default"):
-    content = types.Content(role='user', parts=[types.Part(text=query)])
+async def call_agent_async(query, file_data=None, mime_type=None, user_id="anonymous", session_id="default"):
+    parts = [types.Part(text=query)]
+    if file_data and mime_type:
+        parts.append(types.Part(inline_data=types.Blob(data=file_data, mime_type=mime_type)))
+    
+    content = types.Content(role='user', parts=parts)
     session, runner = await setup_session_and_runner(user_id, session_id)
     events = runner.run_async(user_id=user_id, session_id=session_id, new_message=content)
 
@@ -98,4 +104,5 @@ async def call_agent_async(query, user_id="anonymous", session_id="default"):
 # If running this code as a standalone Python script, you'll need to use asyncio.run() or manage the event loop.
 
 if __name__ ==  "__main__":
+    # Example: call_agent_async("extract this as csv", file_data="base64string", mime_type="application/pdf")
     asyncio.run(call_agent_async("what's the latest ai news?"))
