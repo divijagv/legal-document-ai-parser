@@ -4,7 +4,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const state = {
     apiKey: localStorage.getItem('gemini_api_key') || '',
     file: null,
-    isAnalyzing: false
+    isAnalyzing: false,
+    outputFormat: 'json',
+    theme: localStorage.getItem('theme') || 'dark'
 };
 
 // UI Elements
@@ -20,12 +22,19 @@ const elements = {
     resultSection: document.getElementById('result-section'),
     jsonOutput: document.getElementById('json-output'),
     copyBtn: document.getElementById('copy-json'),
-    progressBar: document.querySelector('.loader-progress')
+    progressBar: document.querySelector('.loader-progress'),
+    formatInputs: document.querySelectorAll('input[name="output-format"]'),
+    themeToggle: document.getElementById('theme-toggle')
 };
 
 // Initial Setup
 if (state.apiKey) {
     elements.apiKeyInput.value = state.apiKey;
+}
+
+if (state.theme === 'light') {
+    document.body.classList.add('light-theme');
+    elements.themeToggle.textContent = '☀️';
 }
 
 // Event Listeners
@@ -41,6 +50,11 @@ elements.fileInput.addEventListener('change', (e) => {
     handleFileSelect(e.target.files[0]);
 });
 
+elements.dropZone.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    elements.dropZone.classList.add('drag-over');
+});
+
 elements.dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     elements.dropZone.classList.add('drag-over');
@@ -53,7 +67,9 @@ elements.dropZone.addEventListener('dragleave', () => {
 elements.dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     elements.dropZone.classList.remove('drag-over');
-    handleFileSelect(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFileSelect(e.dataTransfer.files[0]);
+    }
 });
 
 elements.removeFile.addEventListener('click', () => {
@@ -67,10 +83,25 @@ elements.removeFile.addEventListener('click', () => {
 elements.analyzeBtn.addEventListener('click', () => analyzeDocument());
 
 elements.copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(elements.jsonOutput.textContent);
+    const text = elements.jsonOutput.textContent;
+    navigator.clipboard.writeText(text);
     const originalText = elements.copyBtn.textContent;
     elements.copyBtn.textContent = 'Copied!';
     setTimeout(() => elements.copyBtn.textContent = originalText, 2000);
+});
+
+elements.formatInputs.forEach(input => {
+    input.addEventListener('change', (e) => {
+        state.outputFormat = e.target.value;
+        elements.copyBtn.textContent = state.outputFormat === 'json' ? 'Copy JSON' : 'Copy CSV';
+    });
+});
+
+elements.themeToggle.addEventListener('click', () => {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    document.body.classList.toggle('light-theme');
+    elements.themeToggle.textContent = state.theme === 'light' ? '☀️' : '🌙';
+    localStorage.setItem('theme', state.theme);
 });
 
 // Logic
@@ -110,15 +141,7 @@ async function analyzeDocument() {
     updateProgress(20, 'upload');
 
     try {
-        const genAI = new GoogleGenerativeAI(state.apiKey);
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            generationConfig: { responseMimeType: "application/json" }
-        });
-
-        const fileData = await fileToGenerativePart(state.file);
-        updateProgress(50, 'parse');
-
+        const isCSV = state.outputFormat === 'csv';
         const prompt = `System Role: You are a specialized legal document parser. Your objective is to identify any legal subpoena, summons, or court order and extract pertinent details into a structured format.
 
 Task: Analyze the provided document. If it is a subpoena of any kind, extract the data using the schema below. If the document is not a subpoena or a similar legal request for information, return exactly {}.
@@ -127,9 +150,9 @@ Instructions:
 1. Universal Detection: Identify the document type regardless of the issuing agency (e.g., Federal, State, Criminal, Civil, or Administrative).
 2. Subtype Labeling: Use the subpoena_subtype field to describe the specific nature of the document.
 3. Handling Missing Data: If a field is not found in the text, return null. Do not guess or hallucinate values.
-4. JSON Output ONLY.
+4. ${isCSV ? 'The output MUST be in CSV format. Provide only the CSV content, including headers.' : 'The output MUST be in JSON format.'}
 
-Schema:
+Schema (for reference):
 {
   "is_subpoena": boolean,
   "subpoena_subtype": "string", 
@@ -141,13 +164,32 @@ Schema:
   }
 }`;
 
+        const genAI = new GoogleGenerativeAI(state.apiKey);
+        const config = {
+            model: "gemini-1.5-flash"
+        };
+        if (state.outputFormat === 'json') {
+            config.generationConfig = { responseMimeType: "application/json" };
+        }
+        const model = genAI.getGenerativeModel(config);
+
+        const fileData = await fileToGenerativePart(state.file);
         const result = await model.generateContent([prompt, fileData]);
         const response = await result.response;
         const text = response.text();
 
         updateProgress(100, 'done');
 
-        elements.jsonOutput.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        if (state.outputFormat === 'json') {
+            elements.jsonOutput.textContent = JSON.stringify(JSON.parse(text), null, 2);
+        } else {
+            // For CSV, we might need to clean up potential markdown wrapping
+            let cleanedText = text.trim();
+            if (cleanedText.startsWith('```csv')) cleanedText = cleanedText.replace(/^```csv/, '');
+            if (cleanedText.startsWith('```')) cleanedText = cleanedText.replace(/^```/, '');
+            if (cleanedText.endsWith('```')) cleanedText = cleanedText.replace(/```$/, '');
+            elements.jsonOutput.textContent = cleanedText.trim();
+        }
         elements.resultSection.classList.remove('hidden');
 
     } catch (error) {

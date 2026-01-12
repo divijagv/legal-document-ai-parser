@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,21 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="glass-bg"></div>
     <div class="app-container">
         <header>
-            <h1>Legal Document <span class="gradient-text">Parser</span></h1>
+            <div class="header-content">
+                <h1>Legal Document <span class="gradient-text">Parser</span></h1>
+                <button id="theme-toggle" class="btn-icon theme-toggle" title="Toggle Theme">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+            </div>
             <p class="subtitle">Secure, AI-powered extraction of legal subpoenas and summons.</p>
         </header>
 
@@ -29,17 +38,26 @@
 
             <section id="upload-section" class="card">
                 <h2><span class="icon">📄</span> Document Upload</h2>
+                <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
                 <div id="drop-zone" class="drop-zone">
-                    <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg">
                     <div class="drop-zone-content">
                         <span class="upload-icon">📤</span>
-                        <p>Drag & drop your document or <strong>click to browse</strong></p>
-                        <span class="file-types">Supports PDF, Image, Text</span>
+                        <p>Drag & drop your documents or <strong>click to browse</strong></p>
+                        <span class="file-types">Supports multiple PDFs, Images, Text</span>
                     </div>
                 </div>
                 <div id="file-info" class="file-info hidden">
                     <span class="file-name"></span>
                     <button id="remove-file" class="btn-icon">✕</button>
+                </div>
+                <div class="format-selection">
+                    <span class="format-label">Output Format:</span>
+                    <div class="radio-group">
+                        <input type="radio" id="format-json" name="output-format" value="json" checked>
+                        <label for="format-json">JSON</label>
+                        <input type="radio" id="format-csv" name="output-format" value="csv">
+                        <label for="format-csv">CSV</label>
+                    </div>
                 </div>
                 <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
             </section>
@@ -64,10 +82,47 @@
             <section id="result-section" class="card hidden">
                 <div class="card-header">
                     <h2><span class="icon">📊</span> Analysis Result</h2>
-                    <button id="copy-json" class="btn-secondary">Copy JSON</button>
+                    <div class="button-group">
+                        <button id="download-json" class="btn-secondary">Download JSON</button>
+                        <button id="download-csv" class="btn-secondary">Download CSV</button>
+                        <button id="copy-json" class="btn-secondary">Copy</button>
+                    </div>
                 </div>
+                <!-- Table for multi-document results -->
+                <div id="table-view" class="table-container hidden">
+                    <table id="results-table">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Type</th>
+                                <th>Customer Name</th>
+                                <th>Company</th>
+                                <th>Tax ID / SSN</th>
+                                <th>Requestor</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <!-- Pre for single/raw output -->
                 <div class="result-container">
                     <pre id="json-output"></pre>
+                </div>
+            </section>
+
+            <section id="chat-section" class="card hidden">
+                <div class="card-header">
+                    <h2><span class="icon">💬</span> Document Assistant</h2>
+                </div>
+                <div id="chat-history" class="chat-history">
+                    <div class="chat-message ai">
+                        How can I help you understand these documents?
+                    </div>
+                </div>
+                <div class="chat-input-group">
+                    <input type="text" id="chat-input" placeholder="Ask a question about the document(s)...">
+                    <button id="send-chat" class="btn-primary">Send</button>
                 </div>
             </section>
         </main>
@@ -77,14 +132,344 @@
         </footer>
     </div>
 
-    <!-- SDK for Gemini API -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // Config & State
+        const state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
+            files: [], // Array of File objects
+            results: [], // Array of { name, data }
+            isAnalyzing: false,
+            theme: localStorage.getItem('theme') || 'dark'
+        };
+
+        // UI Elements
+        const elements = {
+            apiKeyInput: document.getElementById('api-key'),
+            dropZone: document.getElementById('drop-zone'),
+            fileInput: document.getElementById('file-input'),
+            fileInfo: document.getElementById('file-info'),
+            fileName: document.querySelector('.file-name'),
+            removeFile: document.getElementById('remove-file'),
+            analyzeBtn: document.getElementById('analyze-btn'),
+            statusSection: document.getElementById('status-section'),
+            resultSection: document.getElementById('result-section'),
+            jsonOutput: document.getElementById('json-output'),
+            tableView: document.getElementById('table-view'),
+            resultsTableBody: document.querySelector('#results-table tbody'),
+            copyBtn: document.getElementById('copy-json'),
+            downloadJsonBtn: document.getElementById('download-json'),
+            downloadCsvBtn: document.getElementById('download-csv'),
+            progressBar: document.querySelector('.loader-progress'),
+            themeToggle: document.getElementById('theme-toggle'),
+            themeIcon: document.getElementById('theme-icon'),
+            themeText: document.getElementById('theme-text'),
+            chatSection: document.getElementById('chat-section'),
+            chatHistory: document.getElementById('chat-history'),
+            chatInput: document.getElementById('chat-input'),
+            sendChatBtn: document.getElementById('send-chat')
+        };
+
+        // Initial Setup
+        if (state.apiKey) {
+            elements.apiKeyInput.value = state.apiKey;
         }
-      }
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                elements.themeIcon.textContent = '☀️';
+                elements.themeText.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('light-theme');
+                elements.themeIcon.textContent = '🌙';
+                elements.themeText.textContent = 'Dark Mode';
+            }
+        }
+        applyTheme(state.theme);
+
+        // Event Listeners
+        elements.apiKeyInput.addEventListener('input', (e) => {
+            state.apiKey = e.target.value;
+            localStorage.setItem('gemini_api_key', state.apiKey);
+            updateAnalyzeButton();
+        });
+
+        elements.dropZone.addEventListener('click', () => elements.fileInput.click());
+
+        elements.fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(Array.from(e.target.files));
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            elements.dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        elements.dropZone.addEventListener('dragover', () => elements.dropZone.classList.add('drag-over'));
+        elements.dropZone.addEventListener('dragleave', () => elements.dropZone.classList.remove('drag-over'));
+        elements.dropZone.addEventListener('drop', (e) => {
+            elements.dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(Array.from(e.dataTransfer.files));
+            }
+        });
+
+        elements.removeFile.addEventListener('click', () => {
+            state.files = [];
+            elements.fileInput.value = '';
+            elements.fileInfo.classList.add('hidden');
+            elements.dropZone.classList.remove('hidden');
+            updateAnalyzeButton();
+        });
+
+        elements.analyzeBtn.addEventListener('click', () => analyzeDocuments());
+
+        elements.copyBtn.addEventListener('click', () => {
+            const text = elements.jsonOutput.textContent;
+            navigator.clipboard.writeText(text);
+            const originalText = elements.copyBtn.textContent;
+            elements.copyBtn.textContent = 'Copied!';
+            setTimeout(() => elements.copyBtn.textContent = originalText, 2000);
+        });
+
+        elements.downloadJsonBtn.addEventListener('click', () => downloadData('json'));
+        elements.downloadCsvBtn.addEventListener('click', () => downloadData('csv'));
+
+        elements.themeToggle.addEventListener('click', () => {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(state.theme);
+            localStorage.setItem('theme', state.theme);
+        });
+
+        elements.sendChatBtn.addEventListener('click', () => handleChat());
+        elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleChat();
+        });
+
+        // Logic
+        function handleFileSelect(files) {
+            state.files = files;
+            elements.fileName.textContent = `${files.length} document(s) ready`;
+            elements.fileInfo.classList.remove('hidden');
+            elements.dropZone.classList.add('hidden');
+            updateAnalyzeButton();
+        }
+
+        function updateAnalyzeButton() {
+            elements.analyzeBtn.disabled = !state.apiKey || state.files.length === 0 || state.isAnalyzing;
+        }
+
+        async function analyzeDocuments() {
+            if (state.isAnalyzing) return;
+            state.isAnalyzing = true;
+            state.results = [];
+            updateAnalyzeButton();
+
+            elements.statusSection.classList.remove('hidden');
+            elements.resultSection.classList.add('hidden');
+            elements.chatSection.classList.add('hidden');
+
+            const genAI = new GoogleGenerativeAI(state.apiKey);
+            const model = genAI.getGenerativeModel({
+                model: "gemini-3-pro-preview",
+                generationConfig: { responseMimeType: "application/json" }
+            });
+
+            try {
+                console.log('Starting analysis for', state.files.length, 'files');
+                for (let i = 0; i < state.files.length; i++) {
+                    const file = state.files[i];
+                    console.log('Analysing file:', file.name);
+                    updateProgress(((i / state.files.length) * 100).toFixed(0), 'parse');
+
+                    const prompt = `System Role: Specialized Legal Parser.
+Task: Analyze the document and extract details using the exact schema below.
+
+JSON Schema:
+{
+  "is_subpoena": boolean,
+  "subpoena_subtype": "string", 
+  "customer_details": {
+    "name": "string",
+    "company": "string",
+    "ssn": "string",
+    "tax_id": "string",
+    "bank_account_number": "string",
+    "dob": "string"
+  },
+  "requestor_information": {
+    "name": "string",
+    "company": "string"
+  }
+}
+
+Return JSON only. If it is not a legal request, return { "is_subpoena": false }.`;
+
+                    const fileData = await fileToGenerativePart(file);
+                    const result = await model.generateContent([prompt, fileData]);
+                    const response = await result.response;
+
+                    // Robust JSON parsing (strip markdown backticks if present)
+                    let text = response.text().trim();
+                    console.log('AI Response for', file.name, ':', text);
+                    if (text.startsWith('```')) {
+                        text = text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/m, '');
+                    }
+                    const data = JSON.parse(text);
+
+                    state.results.push({ name: file.name, data });
+                }
+
+                console.log('Analysis complete. Results:', state.results);
+                renderResults();
+                elements.resultSection.classList.remove('hidden');
+                elements.chatSection.classList.remove('hidden');
+                updateProgress(100, 'done');
+
+                // Bot introduction
+                addChatMessage('ai', `I've finished analyzing ${state.files.length} document(s) using the advanced schema from agent.py. Check the table above for Customer, Company, and Requestor info!`);
+
+                // Auto-scroll to results
+                elements.resultSection.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('Analysis failed: ' + error.message);
+            } finally {
+                state.isAnalyzing = false;
+                updateAnalyzeButton();
+                setTimeout(() => elements.statusSection.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Debugging
+        window.appState = state;
+
+        function renderResults() {
+            elements.resultsTableBody.innerHTML = '';
+
+            if (state.results.length === 0) {
+                elements.tableView.classList.add('hidden');
+                elements.jsonOutput.textContent = 'No results could be extracted. Please check your document format.';
+                return;
+            }
+
+            // Always show table for consistency
+            elements.tableView.classList.remove('hidden');
+            state.results.forEach(res => {
+                const row = document.createElement('tr');
+                const details = res.data.is_subpoena ?
+                    `Subtype: ${res.data.subpoena_subtype || 'N/A'}` :
+                    'Non-legal document';
+
+                const customer = res.data.customer_details || {};
+                const requestor = res.data.requestor_information || {};
+                const identifier = customer.tax_id || customer.ssn || 'N/A';
+
+                row.innerHTML = `
+                    <td>${res.name}</td>
+                    <td>${res.data.is_subpoena ? '✅ Subpoena' : '❌ Other'}</td>
+                    <td>${customer.name || 'N/A'}</td>
+                    <td>${customer.company || 'N/A'}</td>
+                    <td>${identifier}</td>
+                    <td>${requestor.name || requestor.company || 'N/A'}</td>
+                    <td>${details}</td>
+                `;
+                elements.resultsTableBody.appendChild(row);
+            });
+
+            // Keep JSON for power users but table is primary
+            elements.jsonOutput.textContent = JSON.stringify(state.results, null, 2);
+        }
+
+        async function handleChat() {
+            const query = elements.chatInput.value.trim();
+            if (!query || state.isAnalyzing) return;
+
+            addChatMessage('user', query);
+            elements.chatInput.value = '';
+
+            const context = JSON.stringify(state.results);
+            const prompt = `You are a legal document assistant. Based on these parsed results: ${context}, answer the following question: ${query}. Be concise and professional. Use formatting if it helps.`;
+
+            const genAI = new GoogleGenerativeAI(state.apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+
+            try {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                addChatMessage('ai', response.text());
+            } catch (error) {
+                console.error('Chat error:', error);
+                addChatMessage('ai', 'Sorry, I hit an error: ' + error.message);
+            }
+        }
+
+        function addChatMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${role}`;
+            msg.innerHTML = text.replace(/\n/g, '<br>'); // Simple line break handling
+            elements.chatHistory.appendChild(msg);
+            elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+        }
+
+        function downloadData(format) {
+            if (state.results.length === 0) return alert('No results to download.');
+
+            const content = format === 'json' ?
+                JSON.stringify(state.results, null, 2) :
+                convertToCSV(state.results);
+
+            const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `legal_analysis.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function convertToCSV(results) {
+            const headers = ['File', 'Type', 'Customer', 'Subtype', 'SSN', 'Account', 'DOB'];
+            const rows = results.map(r => [
+                `"${r.name}"`,
+                r.data.is_subpoena ? 'Subpoena' : 'Other',
+                `"${r.data.customer_details?.name || ''}"`,
+                `"${r.data.subpoena_subtype || ''}"`,
+                `"${r.data.customer_details?.ssn || ''}"`,
+                `"${r.data.customer_details?.bank_account_number || ''}"`,
+                `"${r.data.customer_details?.dob || ''}"`
+            ]);
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = (e) => reject(new Error('Failed to read file: ' + e.target.error));
+                reader.readAsDataURL(file);
+            });
+            return {
+                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+            };
+        }
+
+        function updateProgress(percent, step) {
+            elements.progressBar.style.width = `${percent}%`;
+            document.querySelectorAll('.step').forEach(el => {
+                if (el.dataset.step === step) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+        }
     </script>
-    <script type="module" src="app.js"></script>
 </body>
+
 </html>
