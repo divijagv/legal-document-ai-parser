@@ -166,7 +166,7 @@ Schema (for reference):
 
         const genAI = new GoogleGenerativeAI(state.apiKey);
         const config = {
-            model: "gemini-1.5-flash"
+            model: "gemini-2.5-flash"
         };
         if (state.outputFormat === 'json') {
             config.generationConfig = { responseMimeType: "application/json" };
