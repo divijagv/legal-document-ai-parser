@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .venv/
+venv_mac/
+.env*
 build/
 dist/
 *.egg-info/
@@ -17,3 +19,5 @@ dist/
 # IDEs
 .vscode/
 .idea/
+*.log
+.DS_Store
