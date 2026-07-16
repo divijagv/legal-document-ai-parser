@@ -17,7 +17,7 @@
     <div class="app-container">
         <header>
             <div class="header-content">
-                <h1>Legal Document <span class="gradient-text">Parser</span></h1>
+                <h1>🔍 Legal Document <span class="gradient-text">Parser</span></h1>
                 <button id="theme-toggle" class="btn-icon theme-toggle" title="Toggle Theme">
                     <span id="theme-icon">🌙</span>
                     <span id="theme-text">Dark Mode</span>
@@ -27,39 +27,43 @@
         </header>
 
         <main>
-            <section id="setup-section" class="card">
-                <h2><span class="icon">🔑</span> API Configuration</h2>
-                <div class="input-group">
-                    <label for="api-key">Gemini API Key</label>
-                    <input type="password" id="api-key" placeholder="Enter your Google API Key...">
-                    <p class="hint">Your key is stored locally in your browser and never sent to our servers.</p>
-                </div>
-            </section>
-
-            <section id="upload-section" class="card">
-                <h2><span class="icon">📄</span> Document Upload</h2>
-                <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
-                <div id="drop-zone" class="drop-zone">
-                    <div class="drop-zone-content">
-                        <span class="upload-icon">📤</span>
-                        <p>Drag & drop your documents or <strong>click to browse</strong></p>
-                        <span class="file-types">Supports multiple PDFs, Images, Text</span>
+            <section id="main-interface" class="card">
+                <div class="setup-grid">
+                    <div class="input-group">
+                        <label for="api-key">🔑 Gemini API Key</label>
+                        <input type="password" id="api-key" placeholder="Enter your Google API Key...">
+                        <p class="hint">Your key is stored locally in your browser.</p>
+                    </div>
+                    <div class="upload-container">
+                        <label>📄 Document Upload</label>
+                        <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
+                        <div id="drop-zone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <span class="upload-icon">📤</span>
+                                <p>Drag & drop documents or <strong>click to browse</strong></p>
+                                <span class="file-types">Supports PDFs, Images, Text</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
                 <div id="file-info" class="file-info hidden">
                     <span class="file-name"></span>
                     <button id="remove-file" class="btn-icon">✕</button>
                 </div>
-                <div class="format-selection">
-                    <span class="format-label">Output Format:</span>
-                    <div class="radio-group">
-                        <input type="radio" id="format-json" name="output-format" value="json" checked>
-                        <label for="format-json">JSON</label>
-                        <input type="radio" id="format-csv" name="output-format" value="csv">
-                        <label for="format-csv">CSV</label>
+
+                <div class="action-bar">
+                    <div class="format-selection">
+                        <span class="format-label">Output Format:</span>
+                        <div class="radio-group">
+                            <input type="radio" id="format-json" name="output-format" value="json" checked>
+                            <label for="format-json">JSON</label>
+                            <input type="radio" id="format-csv" name="output-format" value="csv">
+                            <label for="format-csv">CSV</label>
+                        </div>
                     </div>
+                    <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
                 </div>
-                <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
             </section>
 
             <section id="status-section" class="card hidden">
@@ -81,12 +85,7 @@
 
             <section id="result-section" class="card hidden">
                 <div class="card-header">
-                    <h2><span class="icon">📊</span> Analysis Result</h2>
-                    <div class="button-group">
-                        <button id="download-json" class="btn-secondary">Download JSON</button>
-                        <button id="download-csv" class="btn-secondary">Download CSV</button>
-                        <button id="copy-json" class="btn-secondary">Copy</button>
-                    </div>
+                    <h2>EXTRACTION RESULTS</h2>
                 </div>
                 <!-- Table for multi-document results -->
                 <div id="table-view" class="table-container hidden">
@@ -95,11 +94,11 @@
                             <tr>
                                 <th>File Name</th>
                                 <th>Type</th>
-                                <th>Customer Name</th>
-                                <th>Company</th>
-                                <th>Tax ID / SSN</th>
-                                <th>Requestor</th>
-                                <th>Details</th>
+                                <th>Case Number</th>
+                                <th>Due Date</th>
+                                <th>Confidence Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -277,7 +276,7 @@
 
             const genAI = new GoogleGenerativeAI(state.apiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-3-pro-preview",
+                model: "gemini-2.5-flash",
                 generationConfig: { responseMimeType: "application/json" }
             });
 
@@ -333,7 +332,7 @@ Return JSON only. If it is not a legal request, return { "is_subpoena": false }.
                 updateProgress(100, 'done');
 
                 // Bot introduction
-                addChatMessage('ai', `I've finished analyzing ${state.files.length} document(s) using the advanced schema from agent.py. Check the table above for Customer, Company, and Requestor info!`);
+                addChatMessage('ai', `I've finished analyzing ${state.files.length} document(s). Results are available in the extraction table below.`);
 
                 // Auto-scroll to results
                 elements.resultSection.scrollIntoView({ behavior: 'smooth' });
@@ -355,37 +354,61 @@ Return JSON only. If it is not a legal request, return { "is_subpoena": false }.
 
             if (state.results.length === 0) {
                 elements.tableView.classList.add('hidden');
-                elements.jsonOutput.textContent = 'No results could be extracted. Please check your document format.';
+                elements.jsonOutput.textContent = 'No results could be extracted.';
                 return;
             }
 
-            // Always show table for consistency
             elements.tableView.classList.remove('hidden');
             state.results.forEach(res => {
                 const row = document.createElement('tr');
-                const details = res.data.is_subpoena ?
-                    `Subtype: ${res.data.subpoena_subtype || 'N/A'}` :
-                    'Non-legal document';
+                const data = res.data;
 
-                const customer = res.data.customer_details || {};
-                const requestor = res.data.requestor_information || {};
-                const identifier = customer.tax_id || customer.ssn || 'N/A';
+                // New logic based on agent.py fields
+                const caseInfo = data.case_details || {};
+                const metadata = data.extraction_metadata || {};
+
+                const confidence = metadata.confidence_score !== undefined ?
+                    (metadata.confidence_score * 100).toFixed(0) + '%' : 'N/A';
+
+                let statusHtml = '';
+                const needsReview = data.needs_review || (metadata.confidence_score < 0.7);
+
+                if (needsReview) {
+                    statusHtml = `<span class="tag tag-review">Needs Review (Red Tag)</span>`;
+                } else {
+                    statusHtml = `<span class="tag tag-verified">Verified (Green Tag)</span>`;
+                }
 
                 row.innerHTML = `
                     <td>${res.name}</td>
-                    <td>${res.data.is_subpoena ? '✅ Subpoena' : '❌ Other'}</td>
-                    <td>${customer.name || 'N/A'}</td>
-                    <td>${customer.company || 'N/A'}</td>
-                    <td>${identifier}</td>
-                    <td>${requestor.name || requestor.company || 'N/A'}</td>
-                    <td>${details}</td>
+                    <td>${data.subpoena_subtype || 'Unknown'}</td>
+                    <td>${caseInfo.case_number || 'N/A'}</td>
+                    <td>${caseInfo.date_to || 'N/A'}</td>
+                    <td>${confidence}</td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <a href="#" class="download-link" onclick="downloadSingle('${res.name}')">
+                            <span>📥</span> Download
+                        </a>
+                    </td>
                 `;
                 elements.resultsTableBody.appendChild(row);
             });
 
-            // Keep JSON for power users but table is primary
             elements.jsonOutput.textContent = JSON.stringify(state.results, null, 2);
         }
+
+        window.downloadSingle = (fileName) => {
+            const result = state.results.find(r => r.name === fileName);
+            if (!result) return;
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}_analysis.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
 
         async function handleChat() {
             const query = elements.chatInput.value.trim();
@@ -398,7 +421,7 @@ Return JSON only. If it is not a legal request, return { "is_subpoena": false }.
             const prompt = `You are a legal document assistant. Based on these parsed results: ${context}, answer the following question: ${query}. Be concise and professional. Use formatting if it helps.`;
 
             const genAI = new GoogleGenerativeAI(state.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             try {
                 const result = await model.generateContent(prompt);
