@@ -556,3 +556,254 @@ footer {
         opacity: 1;
     }
 }
+
+/* ---------- Privacy note ---------- */
+.privacy-note {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+}
+
+/* ---------- API key input ---------- */
+.key-input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.key-input-row input[type="password"],
+.key-input-row input[type="text"] {
+    flex: 1;
+}
+
+.key-input-row .btn-icon {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 0 0.9rem;
+    cursor: pointer;
+    color: var(--text-primary);
+}
+
+.hint a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.hint a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- File list ---------- */
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-chip {
+    background: var(--input-bg);
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+
+.file-chip-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-chip-size {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.file-chip-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.file-chip-remove:hover {
+    color: #ef4444;
+}
+
+.status-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* ---------- How It Works ---------- */
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.step-card {
+    background: var(--input-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.step-number {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+}
+
+.step-card h3 {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.step-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ---------- Error section ---------- */
+.error-content {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+#error-title {
+    color: #ef4444;
+    margin-bottom: 0.75rem;
+    font-size: 1.3rem;
+    text-transform: none;
+    justify-content: center;
+}
+
+#error-message {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+/* ---------- Result hint & extra tags ---------- */
+.result-hint {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: -0.75rem 0 1rem;
+}
+
+tr.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+tr.clickable:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.tag-pending {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+}
+
+.tag-error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.tag-neutral {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+}
+
+td[title]:not([title=""]) {
+    text-decoration: underline dotted;
+    text-decoration-color: var(--text-secondary);
+    text-underline-offset: 3px;
+}
+
+/* ---------- Expandable row details ---------- */
+.row-details-row td {
+    padding: 0;
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.row-details {
+    padding: 1.5rem;
+    background: var(--input-bg);
+}
+
+.row-details p {
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+}
+
+.row-details h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.reveal-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 0.4rem;
+    color: var(--accent-blue);
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    cursor: pointer;
+}
