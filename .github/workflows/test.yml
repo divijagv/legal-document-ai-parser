@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The unit tests cover the pure helpers in legal_parser_agent/validation.py
+      # and don't need google-adk, so plain pytest keeps this job fast.
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run tests
+        run: pytest -q
