@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Doc Parser | Premium AI Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <h1>🔍 Legal Document <span class="gradient-text">Parser</span></h1>
+                <button id="theme-toggle" class="btn-icon theme-toggle" title="Toggle Theme">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+            </div>
+            <p class="subtitle">An AI- powered documewnt intelligence Platform for extracting structured data from
+                unstructured documents</p>
+        </header>
+
+        <main>
+            <section id="main-interface" class="card">
+                <div class="setup-grid">
+                    <div class="input-group">
+                        <label for="api-key">🔑 Gemini API Key</label>
+                        <input type="password" id="api-key" placeholder="Enter your Google API Key...">
+                        <p class="hint">Your key is stored locally in your browser.</p>
+                    </div>
+                    <div class="upload-container">
+                        <label>📄 Document Upload</label>
+                        <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
+                        <div id="drop-zone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <span class="upload-icon">📤</span>
+                                <p>Drag & drop documents or <strong>click to browse</strong></p>
+                                <span class="file-types">Supports PDFs, Images, Text</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="file-info" class="file-info hidden">
+                    <span class="file-name"></span>
+                    <button id="remove-file" class="btn-icon">✕</button>
+                </div>
+
+                <div class="action-bar">
+                    <div class="format-selection">
+                        <span class="format-label">Output Format:</span>
+                        <div class="radio-group">
+                            <input type="radio" id="format-json" name="output-format" value="json" checked>
+                            <label for="format-json">JSON</label>
+                            <input type="radio" id="format-csv" name="output-format" value="csv">
+                            <label for="format-csv">CSV</label>
+                        </div>
+                    </div>
+                    <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
+                </div>
+    </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="card">
+        <div class="card-header">
+            <h2>📚 How It Works</h2>
+        </div>
+        <div class="how-it-works-content">
+            <div class="steps-container">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Upload Document</h3>
+                    <p>Drop your legal subpoena or court document (PDF, DOC, DOCX, or image) into the upload area above.
+                    </p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our AI-powered agent analyzes the document and extracts key information including customer
+                        details, requestor information, case details, and dates.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Review & Export</h3>
+                    <p>Review the extracted data in an organized table format. Download as JSON or CSV, and ask
+                        questions about the document using the chat assistant.</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>🔍 What Information is Extracted?</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Customer Details:</strong> Name, company, SSN, account numbers, DOB
+                    </div>
+                    <div class="info-item">
+                        <strong>Case Information:</strong> Case number, record period dates, submission deadline
+                    </div>
+                    <div class="info-item">
+                        <strong>Requestor Details:</strong> Name, company, email, address, state, entity type
+                    </div>
+                    <div class="info-item">
+                        <strong>Document Summary:</strong> AI-generated summary of the document's purpose
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="status-section" class="card hidden">
+        <h2><span class="icon">⚡</span> Analysis Progress</h2>
+        <div class="status-steps">
+            <div class="step" data-step="upload">
+                <div class="step-dot"></div>
+                <span>Uploading Document</span>
+            </div>
+            <div class="step" data-step="parse">
+                <div class="step-dot"></div>
+                <span>AI Parsing...</span>
+            </div>
+        </div>
+        <div class="loader-bar">
+            <div class="loader-progress"></div>
+        </div>
+    </section>
+
+    <section id="error-section" class="card hidden">
+        <div class="error-content">
+            <div class="error-icon">⚠️</div>
+            <h2 id="error-title">Analysis Failed</h2>
+            <p id="error-message"></p>
+            <button id="retry-btn" class="btn-primary">Try Again</button>
+        </div>
+    </section>
+
+    <section id="result-section" class="card hidden">
+        <div class="card-header">
+            <h2>EXTRACTION RESULTS</h2>
+        </div>
+
+        <!-- Table for multi-document results -->
+        <div id="table-view" class="table-container hidden">
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Type</th>
+                        <th title="Person or company to whom the subpoena is addressed">Customer/Company</th>
+                        <th>SSN</th>
+                        <th>Account #</th>
+                        <th>DOB</th>
+                        <th>Case #</th>
+                        <th title="Start date of period for which records are requested">Records From</th>
+                        <th title="End date of period for which records are requested">Records To</th>
+                        <th title="Deadline to submit documents">Due Date</th>
+                        <th>Requestor Name</th>
+                        <th>Requestor Company</th>
+                        <th>Requestor Email</th>
+                        <th>Requestor Address</th>
+                        <th>State</th>
+                        <th>Entity Type</th>
+                        <th>Alt Requestor</th>
+                        <th>Summary</th>
+                        <th>Confidence</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="chat-section" class="card hidden">
+        <div class="card-header">
+            <h2><span class="icon">💬</span> Document Assistant</h2>
+        </div>
+        <div id="chat-history" class="chat-history">
+            <div class="chat-message ai">
+                How can I help you understand these documents?
+            </div>
+        </div>
+        <div class="chat-input-group">
+            <input type="text" id="chat-input" placeholder="Ask a question about the document(s)...">
+            <button id="send-chat" class="btn-primary">Send</button>
+        </div>
+    </section>
+    </main>
+
+    <!-- Floating Chat Button -->
+    <button id="chat-float-btn" class="chat-float-btn" title="Ask questions about your documents">
+        💬 Ask Questions
+    </button>
+
+    <footer>
+        <p>&copy; 2026 LegalDoc AI. Secure & Private.</p>
+    </footer>
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // Config & State
+        const state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
+            files: [], // Array of File objects
+            results: [], // Array of { name, data }
+            isAnalyzing: false,
+            theme: localStorage.getItem('theme') || 'dark'
+        };
+
+        // UI Elements
+        const elements = {
+            apiKeyInput: document.getElementById('api-key'),
+            dropZone: document.getElementById('drop-zone'),
+            fileInput: document.getElementById('file-input'),
+            fileInfo: document.getElementById('file-info'),
+            fileName: document.querySelector('.file-name'),
+            removeFile: document.getElementById('remove-file'),
+            analyzeBtn: document.getElementById('analyze-btn'),
+            statusSection: document.getElementById('status-section'),
+            resultSection: document.getElementById('result-section'),
+            tableView: document.getElementById('table-view'),
+            resultsTableBody: document.querySelector('#results-table tbody'),
+            copyBtn: document.getElementById('copy-json'),
+            downloadJsonBtn: document.getElementById('download-json'),
+            downloadCsvBtn: document.getElementById('download-csv'),
+            progressBar: document.querySelector('.loader-progress'),
+            themeToggle: document.getElementById('theme-toggle'),
+            themeIcon: document.getElementById('theme-icon'),
+            themeText: document.getElementById('theme-text'),
+            chatSection: document.getElementById('chat-section'),
+            chatHistory: document.getElementById('chat-history'),
+            chatInput: document.getElementById('chat-input'),
+            sendChatBtn: document.getElementById('send-chat'),
+            errorSection: document.getElementById('error-section'),
+            errorTitle: document.getElementById('error-title'),
+            errorMessage: document.getElementById('error-message'),
+            retryBtn: document.getElementById('retry-btn'),
+            chatFloatBtn: document.getElementById('chat-float-btn')
+        };
+
+        // Initial Setup
+        if (state.apiKey) {
+            elements.apiKeyInput.value = state.apiKey;
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                elements.themeIcon.textContent = '☀️';
+                elements.themeText.textContent = 'Light Mode';
+            } else {
+                document.body.classList.remove('light-theme');
+                elements.themeIcon.textContent = '🌙';
+                elements.themeText.textContent = 'Dark Mode';
+            }
+        }
+        applyTheme(state.theme);
+
+        // Event Listeners
+        elements.apiKeyInput.addEventListener('input', (e) => {
+            state.apiKey = e.target.value;
+            localStorage.setItem('gemini_api_key', state.apiKey);
+            updateAnalyzeButton();
+        });
+
+        elements.dropZone.addEventListener('click', () => elements.fileInput.click());
+
+        elements.fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(Array.from(e.target.files));
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            elements.dropZone.addEventListener(evt, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        elements.dropZone.addEventListener('dragover', () => elements.dropZone.classList.add('drag-over'));
+        elements.dropZone.addEventListener('dragleave', () => elements.dropZone.classList.remove('drag-over'));
+        elements.dropZone.addEventListener('drop', (e) => {
+            elements.dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(Array.from(e.dataTransfer.files));
+            }
+        });
+
+        elements.removeFile.addEventListener('click', () => {
+            state.files = [];
+            elements.fileInput.value = '';
+            elements.fileInfo.classList.add('hidden');
+            elements.dropZone.classList.remove('hidden');
+            updateAnalyzeButton();
+        });
+
+        elements.analyzeBtn.addEventListener('click', () => analyzeDocuments());
+
+        // Add null checks for optional elements
+        if (elements.copyBtn) {
+            elements.copyBtn.addEventListener('click', () => {
+                // Copy table data as JSON
+                const text = JSON.stringify(state.results, null, 2);
+                navigator.clipboard.writeText(text);
+                const originalText = elements.copyBtn.textContent;
+                elements.copyBtn.textContent = 'Copied!';
+                setTimeout(() => elements.copyBtn.textContent = originalText, 2000);
+            });
+        }
+
+        if (elements.downloadJsonBtn) {
+            elements.downloadJsonBtn.addEventListener('click', () => downloadData('json'));
+        }
+
+        if (elements.downloadCsvBtn) {
+            elements.downloadCsvBtn.addEventListener('click', () => downloadData('csv'));
+        }
+
+        elements.themeToggle.addEventListener('click', () => {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(state.theme);
+            localStorage.setItem('theme', state.theme);
+        });
+
+        elements.sendChatBtn.addEventListener('click', () => handleChat());
+        elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleChat();
+        });
+
+        elements.retryBtn.addEventListener('click', () => {
+            elements.errorSection.classList.add('hidden');
+            elements.statusSection.classList.add('hidden');
+        });
+
+        elements.chatFloatBtn.addEventListener('click', () => {
+            elements.chatSection.scrollIntoView({ behavior: 'smooth' });
+            elements.chatInput.focus();
+        });
+
+        // Logic
+        function handleFileSelect(files) {
+            state.files = files;
+            elements.fileName.textContent = `${files.length} document(s) ready`;
+            elements.fileInfo.classList.remove('hidden');
+            elements.dropZone.classList.add('hidden');
+            updateAnalyzeButton();
+        }
+
+        function updateAnalyzeButton() {
+            elements.analyzeBtn.disabled = !state.apiKey || state.files.length === 0 || state.isAnalyzing;
+        }
+
+        async function analyzeDocuments() {
+            if (state.isAnalyzing) return;
+            state.isAnalyzing = true;
+            state.results = [];
+            updateAnalyzeButton();
+
+            elements.statusSection.classList.remove('hidden');
+            elements.resultSection.classList.add('hidden');
+            elements.chatSection.classList.add('hidden');
+            elements.errorSection.classList.add('hidden');
+            document.getElementById('how-it-works').classList.add('hidden');
+
+            try {
+                console.log('Starting analysis...');
+
+                const formData = new FormData();
+                // Currently backend handles single file 'file'. 
+                // We send the first file for now.
+                if (state.files.length > 0) {
+                    formData.append('file', state.files[0]);
+                }
+
+                const headers = {};
+                if (state.apiKey) {
+                    headers['x-goog-api-key'] = state.apiKey;
+                }
+
+                updateProgress(30, 'parse');
+
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Server error';
+                    try {
+                        const err = await response.json();
+                        errorMessage = err.error || 'Server error';
+                    } catch (jsonError) {
+                        // If response is not JSON, try to get text
+                        const text = await response.text();
+                        errorMessage = text || `Server error (${response.status})`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log('Analysis result:', data);
+
+                state.results.push({ name: state.files[0].name, data });
+
+                renderResults();
+                elements.resultSection.classList.remove('hidden');
+                elements.chatSection.classList.remove('hidden');
+                updateProgress(100, 'done');
+
+                addChatMessage('ai', `Analysis complete.`);
+                elements.resultSection.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+
+                // Display error in the error section
+                let errorMessage = error.message;
+
+                // Handle specific error types
+                if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    errorMessage = '🌐 Network Error: Unable to connect to the server. The server may have crashed or restarted. Please refresh the page and try again.';
+                } else if (errorMessage.includes('timeout')) {
+                    errorMessage = '⏱️ Timeout Error: The request took too long. Please try with a smaller document or try again later.';
+                }
+
+                elements.errorMessage.textContent = errorMessage;
+                elements.errorSection.classList.remove('hidden');
+                elements.statusSection.classList.add('hidden');
+            } finally {
+                state.isAnalyzing = false;
+                updateAnalyzeButton();
+                setTimeout(() => elements.statusSection.classList.add('hidden'), 3000);
+            }
+        }
+
+        // Debugging
+        window.appState = state;
+
+        function renderResults() {
+            elements.resultsTableBody.innerHTML = '';
+
+            if (state.results.length === 0) {
+                elements.tableView.classList.add('hidden');
+                return;
+            }
+
+            elements.tableView.classList.remove('hidden');
+            state.results.forEach(res => {
+                const row = document.createElement('tr');
+                const data = res.data;
+
+                // New logic based on agent.py fields
+                const caseInfo = data.case_details || {};
+                const customerDetails = data.customer_details || {};
+                const metadata = data.extraction_metadata || {};
+
+                // Customer name logic: prioritize company name, fallback to individual name
+                let customerName = 'N/A';
+                if (customerDetails.company) {
+                    customerName = customerDetails.company;
+                    // If both exist, show both
+                    if (customerDetails.name) {
+                        customerName += ` (${customerDetails.name})`;
+                    }
+                } else if (customerDetails.name) {
+                    customerName = customerDetails.name;
+                }
+
+                const confidence = metadata.confidence_score !== undefined ?
+                    (metadata.confidence_score * 100).toFixed(0) + '%' : 'N/A';
+
+                let statusHtml = '';
+                const needsReview = data.needs_review || (metadata.confidence_score < 0.7);
+
+                // Create tooltip text for status
+                let tooltipText = '';
+                if (needsReview) {
+                    const reasons = [];
+                    if (metadata.confidence_score < 0.7) {
+                        reasons.push(`Low confidence score: ${confidence}`);
+                    }
+                    if (metadata.notes) {
+                        reasons.push(metadata.notes);
+                    }
+                    if (reasons.length === 0) {
+                        reasons.push('Manual review recommended');
+                    }
+                    tooltipText = reasons.join('. ');
+                    statusHtml = `<span class="tag tag-review" title="${tooltipText.replace(/"/g, '&quot;')}">Needs Review ⓘ</span>`;
+                } else {
+                    tooltipText = 'Extraction confidence is high';
+                    statusHtml = `<span class="tag tag-verified" title="${tooltipText}">Verified ✓</span>`;
+                }
+
+                // Prepare requestor and summary for display
+                const requestorInfo = data.requestor_information || {};
+                const alternateRequestor = data.alternate_requestor || {};
+                const altRequestorDisplay = alternateRequestor.name || 'N/A';
+                const altRequestorDetails = alternateRequestor.details || '';
+                const altRequestorFull = altRequestorDetails ? `${altRequestorDisplay} - ${altRequestorDetails}` : altRequestorDisplay;
+
+                const summary = data.document_summary || 'N/A';
+                const summaryShort = summary.length > 50 ? summary.substring(0, 50) + '...' : summary;
+
+                row.innerHTML = `
+                    <td>${res.name}</td>
+                    <td>${data.subpoena_subtype || 'Unknown'}</td>
+                    <td>${customerName}</td>
+                    <td>${customerDetails.ssn || 'N/A'}</td>
+                    <td>${customerDetails.bank_account_number || 'N/A'}</td>
+                    <td>${customerDetails.dob || 'N/A'}</td>
+                    <td>${caseInfo.case_number || 'N/A'}</td>
+                    <td>${caseInfo.date_from || 'N/A'}</td>
+                    <td>${caseInfo.date_to || 'N/A'}</td>
+                    <td>${caseInfo.due_date || 'N/A'}</td>
+                    <td>${requestorInfo.name || 'N/A'}</td>
+                    <td>${requestorInfo.company || 'N/A'}</td>
+                    <td title="${requestorInfo.email || 'N/A'}">${requestorInfo.email || 'N/A'}</td>
+                    <td title="${requestorInfo.address || 'N/A'}">${requestorInfo.address || 'N/A'}</td>
+                    <td>${requestorInfo.state_code || 'N/A'}</td>
+                    <td>${requestorInfo.requestor_entity_type || 'N/A'}</td>
+                    <td title="${altRequestorFull}">${altRequestorDisplay}</td>
+                    <td title="${summary.replace(/"/g, '&quot;')}">${summaryShort}</td>
+                    <td>${confidence}</td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <a href="#" class="download-link" onclick="downloadSingle('${res.name}')">
+                            <span>📥</span> Download
+                        </a>
+                    </td>
+                `;
+                elements.resultsTableBody.appendChild(row);
+            });
+        }
+
+        window.downloadSingle = (fileName) => {
+            const result = state.results.find(r => r.name === fileName);
+            if (!result) return;
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}_analysis.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        async function handleChat() {
+            const query = elements.chatInput.value.trim();
+            if (!query || state.isAnalyzing) return;
+
+            addChatMessage('user', query);
+            elements.chatInput.value = '';
+
+            const context = JSON.stringify(state.results);
+            const prompt = `You are a legal document assistant. Based on these parsed results: ${context}, answer the following question: ${query}. Be concise and professional. Use formatting if it helps.`;
+
+            const genAI = new GoogleGenerativeAI(state.apiKey);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+            try {
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                addChatMessage('ai', response.text());
+            } catch (error) {
+                console.error('Chat error:', error);
+                addChatMessage('ai', 'Sorry, I hit an error: ' + error.message);
+            }
+        }
+
+        function addChatMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${role}`;
+            msg.innerHTML = text.replace(/\n/g, '<br>'); // Simple line break handling
+            elements.chatHistory.appendChild(msg);
+            elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+        }
+
+        function downloadData(format) {
+            if (state.results.length === 0) return alert('No results to download.');
+
+            const content = format === 'json' ?
+                JSON.stringify(state.results, null, 2) :
+                convertToCSV(state.results);
+
+            const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `legal_analysis.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function convertToCSV(results) {
+            const headers = ['File', 'Type', 'Customer', 'Subtype', 'SSN', 'Account', 'DOB'];
+            const rows = results.map(r => [
+                `"${r.name}"`,
+                r.data.is_subpoena ? 'Subpoena' : 'Other',
+                `"${r.data.customer_details?.name || ''}"`,
+                `"${r.data.subpoena_subtype || ''}"`,
+                `"${r.data.customer_details?.ssn || ''}"`,
+                `"${r.data.customer_details?.bank_account_number || ''}"`,
+                `"${r.data.customer_details?.dob || ''}"`
+            ]);
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        async function fileToGenerativePart(file) {
+            const base64EncodedDataPromise = new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = (e) => reject(new Error('Failed to read file: ' + e.target.error));
+                reader.readAsDataURL(file);
+            });
+            return {
+                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+            };
+        }
+
+        function updateProgress(percent, step) {
+            elements.progressBar.style.width = `${percent}%`;
+            document.querySelectorAll('.step').forEach(el => {
+                if (el.dataset.step === step) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+
+</html>

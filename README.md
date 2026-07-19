@@ -4,18 +4,20 @@ An AI-powered document intelligence tool for extracting structured data from uns
 
 Drop in a document and get back a structured record: who it's addressed to, what's being requested, the case number, key dates, the requesting party, and a confidence score flagging anything that needs a human to double-check.
 
+![Legal Document Parser preview: upload a subpoena, watch it get analyzed, review structured results with confidence tags](demo.gif)
+
 ## How it's built
 
-This repo actually contains two independent ways to run the extraction:
+This repo contains two independent ways to run the extraction. **The static web app is the primary, public-facing product.** The Flask backend is a secondary option for anyone who wants a hosted version with a shared server-side API key.
 
-1. **Web app** (`index.html` / `app.js` / `style.css`) — a static site with no server. It calls the Gemini API directly from your browser using a key you provide. This is what's deployed via GitHub Pages (see `.github/workflows/deploy.yml`).
-2. **Local CLI** (`main.py` / `legal_parser_agent/`) — a Python backend built on [Google's Agent Development Kit](https://google.github.io/adk-docs/), useful for testing the extraction prompt/schema locally or scripting batch extraction. It's independent of the web app.
+1. **Web app** (`index.html` / `app.js` / `style.css`, at the repo root) — a static site with no server. It calls the Gemini API directly from your browser using a key you provide. This is what's deployed via GitHub Pages (see `.github/workflows/deploy.yml`), and what most users should use.
+2. **Flask backend** (`app.py` / `templates/` / `static/` / `legal_parser_agent/`) — a Python server built on [Google's Agent Development Kit](https://google.github.io/adk-docs/), deployable to Render (see `Procfile` / `requirements.txt`). Useful if you want to host a version that doesn't require visitors to bring their own API key, or want to run extraction from the command line via `main.py`.
 
-Both use the same extraction schema and the `gemini-2.5-flash` model, but they don't share a runtime — there's no Flask/API server connecting them.
+Both use the same extraction schema and the `gemini-2.5-flash` model, but they're independent runtimes — the static site never talks to the Flask app.
 
-## 🚀 Web App
+## 🚀 Web App (primary)
 
-No installation required. Open `index.html` in a browser (or visit the GitHub Pages deployment of this repo), then:
+No installation required. Open `index.html` in a browser, or visit the GitHub Pages deployment of this repo, then:
 
 1. Paste in a Gemini API key — get a free one at [Google AI Studio](https://aistudio.google.com/apikey).
 2. Drag in one or more subpoenas, summons, or court orders (PDF, PNG, JPG, or TXT — up to 20MB each).
@@ -24,9 +26,13 @@ No installation required. Open `index.html` in a browser (or visit the GitHub Pa
 
 Your API key and documents are sent directly from your browser to Google's Generative Language API. Nothing passes through a server we control.
 
-## 🛠 Local CLI (optional)
+### Deploying it yourself
 
-Useful if you want to run extraction from the command line or iterate on the agent's prompt/schema.
+The included `.github/workflows/deploy.yml` publishes the repo root to GitHub Pages on every push to `master`. Enable Pages for this repo (Settings → Pages → source: `gh-pages` branch) and it's live at `https://<your-username>.github.io/legal-document-ai-parser/`.
+
+## 🛠 Flask backend (optional, secondary)
+
+Useful if you want to self-host a version with a server-side API key, or run extraction from the command line.
 
 ### Prerequisites
 
@@ -34,7 +40,7 @@ Useful if you want to run extraction from the command line or iterate on the age
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) (recommended) or pip
 - A Gemini API key
 
-### Setup
+### Local setup
 
 ```bash
 git clone https://github.com/divijagv/legal-document-ai-parser.git
@@ -59,32 +65,35 @@ export GOOGLE_API_KEY="your-actual-api-key"
 $env:GOOGLE_API_KEY = "your-actual-api-key"
 ```
 
-```
-# legal_parser_agent/.env
-GOOGLE_API_KEY=your-actual-api-key
-```
-
-### Running it
+Run the CLI directly against a file:
 
 ```bash
-python main.py path/to/subpoena.pdf
+python main.py path/to/subpoena.pdf      # prints extracted JSON
 ```
 
-Prints the extracted record as JSON. Use `--compact` for single-line output.
+Or run the Flask server and open `http://127.0.0.1:8080`:
 
-To test the agent interactively instead, use ADK's own dev UI:
+```bash
+python app.py
+```
+
+To test the agent in isolation instead (not the app's UI), use ADK's own dev console:
 
 ```bash
 uv run adk web
 ```
 
-This opens ADK's built-in playground, which starts on an agent-picker screen rather than the app's UI — it's for testing the agent in isolation, not the product experience.
+This opens ADK's built-in playground on an agent-picker screen — it's for testing the agent, not the product experience.
+
+### Deploying to Render
+
+`Procfile` and `requirements.txt` are set up for a one-click Render web service: connect the repo, and Render will run `gunicorn app:app` using the dependencies in `requirements.txt`. Set `GOOGLE_API_KEY` as an environment variable in the Render dashboard if you want a shared server-side key instead of requiring visitors to bring their own.
 
 ## 🔒 Security & Privacy
 
-- Neither the web app nor the CLI store your API key anywhere except your own browser's local storage or your own environment/`.env` file.
-- The web app never sends your key or documents to any server other than Google's.
-- These documents often contain SSNs, bank account numbers, and dates of birth. The web app masks these fields in the UI by default (click "Show" to reveal), and the CLI never logs full extraction output to the console.
+- Neither the web app nor the Flask backend store your API key anywhere except your own browser's local storage, your own environment, or a `.env` file.
+- The static web app never sends your key or documents to any server other than Google's.
+- These documents often contain SSNs, bank account numbers, and dates of birth. The web app masks these fields in the UI by default (click "Show" to reveal). The Flask backend avoids logging full extraction output, including these fields, to the server console.
 - Don't commit real API keys to version control — `.env` and `.venv/` are already gitignored.
 
 ## 🧩 Features
@@ -100,15 +109,21 @@ This opens ADK's built-in playground, which starts on an agent-picker screen rat
 
 ```
 .
-├── index.html                 # Web app markup
-├── app.js                     # Web app logic (calls Gemini directly from the browser)
-├── style.css                  # Web app styling
-├── main.py                    # CLI entry point for the local backend
+├── index.html                     # Web app markup (primary product)
+├── app.js                         # Web app logic (calls Gemini directly from the browser)
+├── style.css                      # Web app styling
+├── .github/workflows/deploy.yml   # Publishes the web app to GitHub Pages
+│
+├── app.py                         # Flask entry point (secondary/optional)
+├── main.py                        # CLI entry point for the local backend
+├── templates/index.html           # Flask template
+├── static/style.css               # Flask static styling
 ├── legal_parser_agent/
-│   ├── agent.py                # ADK agent + extraction/validation logic
-│   └── .env                    # Local-only API key (gitignored)
-├── pyproject.toml             # Python dependencies for the local CLI
-└── .github/workflows/deploy.yml  # Publishes the static web app to GitHub Pages
+│   ├── agent.py                     # ADK agent + extraction/validation logic
+│   └── .env                         # Local-only API key (gitignored)
+├── Procfile                       # Render/Heroku process definition
+├── requirements.txt               # pip dependencies for the Flask backend
+└── pyproject.toml                 # Python dependencies for uv / the CLI
 ```
 
 ## Disclaimer
