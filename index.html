@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal Doc Parser | Premium AI Analysis</title>
+    <title>Legal Doc Parser | AI-Powered Subpoena Analysis</title>
+    <meta name="description" content="Drop in a subpoena, summons, or court order and get structured, reviewable data back in seconds. Runs entirely in your browser.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,53 +18,75 @@
     <div class="app-container">
         <header>
             <div class="header-content">
-                <h1>Legal Document <span class="gradient-text">Parser</span></h1>
+                <h1>🔍 Legal Document <span class="gradient-text">Parser</span></h1>
                 <button id="theme-toggle" class="btn-icon theme-toggle" title="Toggle Theme">
                     <span id="theme-icon">🌙</span>
                     <span id="theme-text">Dark Mode</span>
                 </button>
             </div>
-            <p class="subtitle">Secure, AI-powered extraction of legal subpoenas and summons.</p>
+            <p class="subtitle">AI-powered extraction of structured data from legal subpoenas, summons and court orders.</p>
+            <p class="privacy-note">🔒 Runs entirely in your browser — your API key and documents go straight to Google's Gemini API and never touch our servers.</p>
         </header>
 
         <main>
-            <section id="setup-section" class="card">
-                <h2><span class="icon">🔑</span> API Configuration</h2>
-                <div class="input-group">
-                    <label for="api-key">Gemini API Key</label>
-                    <input type="password" id="api-key" placeholder="Enter your Google API Key...">
-                    <p class="hint">Your key is stored locally in your browser and never sent to our servers.</p>
+            <section id="main-interface" class="card">
+                <div class="setup-grid">
+                    <div class="input-group">
+                        <label for="api-key">🔑 Gemini API Key</label>
+                        <div class="key-input-row">
+                            <input type="password" id="api-key" placeholder="Enter your Google API Key...">
+                            <button type="button" id="toggle-key" class="btn-icon" title="Show/hide key">👁</button>
+                        </div>
+                        <p class="hint">Stored only in your browser. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get a free key from Google AI Studio →</a></p>
+                    </div>
+                    <div class="upload-container">
+                        <label>📄 Document Upload</label>
+                        <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
+                        <div id="drop-zone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <span class="upload-icon">📤</span>
+                                <p>Drag & drop documents or <strong>click to browse</strong></p>
+                                <span class="file-types">PDF, PNG, JPG, or TXT — up to 20MB each</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="file-info" class="file-info hidden">
+                    <div id="file-list" class="file-list"></div>
+                </div>
+
+                <div class="action-bar">
+                    <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
                 </div>
             </section>
 
-            <section id="upload-section" class="card">
-                <h2><span class="icon">📄</span> Document Upload</h2>
-                <input type="file" id="file-input" hidden accept=".pdf,.txt,.png,.jpg,.jpeg" multiple>
-                <div id="drop-zone" class="drop-zone">
-                    <div class="drop-zone-content">
-                        <span class="upload-icon">📤</span>
-                        <p>Drag & drop your documents or <strong>click to browse</strong></p>
-                        <span class="file-types">Supports multiple PDFs, Images, Text</span>
+            <section id="how-it-works" class="card">
+                <div class="card-header">
+                    <h2>📚 How It Works</h2>
+                </div>
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Add your API key</h3>
+                        <p>Paste a free Gemini API key. It stays in your browser and is sent only to Google.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Upload documents</h3>
+                        <p>Drop in one or more subpoenas, summons, or court orders as PDF, image, or text.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Review & export</h3>
+                        <p>Get structured results with a confidence flag, expand any row for full detail, then export as JSON or CSV.</p>
                     </div>
                 </div>
-                <div id="file-info" class="file-info hidden">
-                    <span class="file-name"></span>
-                    <button id="remove-file" class="btn-icon">✕</button>
-                </div>
-                <div class="format-selection">
-                    <span class="format-label">Output Format:</span>
-                    <div class="radio-group">
-                        <input type="radio" id="format-json" name="output-format" value="json" checked>
-                        <label for="format-json">JSON</label>
-                        <input type="radio" id="format-csv" name="output-format" value="csv">
-                        <label for="format-csv">CSV</label>
-                    </div>
-                </div>
-                <button id="analyze-btn" class="btn-primary" disabled>Analyze Document</button>
             </section>
 
             <section id="status-section" class="card hidden">
                 <h2><span class="icon">⚡</span> Analysis Progress</h2>
+                <p id="status-text" class="status-text"></p>
                 <div class="status-steps">
                     <div class="step" data-step="upload">
                         <div class="step-dot"></div>
@@ -79,35 +102,41 @@
                 </div>
             </section>
 
+            <section id="error-section" class="card hidden">
+                <div class="error-content">
+                    <div class="error-icon">⚠️</div>
+                    <h2 id="error-title">Analysis Failed</h2>
+                    <p id="error-message"></p>
+                    <button id="retry-btn" class="btn-primary">Try Again</button>
+                </div>
+            </section>
+
             <section id="result-section" class="card hidden">
                 <div class="card-header">
-                    <h2><span class="icon">📊</span> Analysis Result</h2>
+                    <h2>Extraction Results</h2>
                     <div class="button-group">
-                        <button id="download-json" class="btn-secondary">Download JSON</button>
-                        <button id="download-csv" class="btn-secondary">Download CSV</button>
-                        <button id="copy-json" class="btn-secondary">Copy</button>
+                        <button id="copy-json" class="btn-secondary">Copy JSON</button>
+                        <button id="download-json" class="btn-secondary">⬇ JSON</button>
+                        <button id="download-csv" class="btn-secondary">⬇ CSV</button>
                     </div>
                 </div>
-                <!-- Table for multi-document results -->
-                <div id="table-view" class="table-container hidden">
+                <p class="result-hint">Click a row to expand full details, including masked sensitive fields.</p>
+                <div class="table-container">
                     <table id="results-table">
                         <thead>
                             <tr>
                                 <th>File Name</th>
                                 <th>Type</th>
-                                <th>Customer Name</th>
-                                <th>Company</th>
-                                <th>Tax ID / SSN</th>
-                                <th>Requestor</th>
-                                <th>Details</th>
+                                <th>Customer / Company</th>
+                                <th>Case #</th>
+                                <th>Due Date</th>
+                                <th>Confidence</th>
+                                <th>Status</th>
+                                <th>Download</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
-                </div>
-                <!-- Pre for single/raw output -->
-                <div class="result-container">
-                    <pre id="json-output"></pre>
                 </div>
             </section>
 
@@ -127,349 +156,16 @@
             </section>
         </main>
 
+        <button id="chat-float-btn" class="chat-float-btn" title="Ask questions about your documents">
+            💬 Ask Questions
+        </button>
+
         <footer>
             <p>&copy; 2026 LegalDoc AI. Secure & Private.</p>
         </footer>
     </div>
 
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
-        // Config & State
-        const state = {
-            apiKey: localStorage.getItem('gemini_api_key') || '',
-            files: [], // Array of File objects
-            results: [], // Array of { name, data }
-            isAnalyzing: false,
-            theme: localStorage.getItem('theme') || 'dark'
-        };
-
-        // UI Elements
-        const elements = {
-            apiKeyInput: document.getElementById('api-key'),
-            dropZone: document.getElementById('drop-zone'),
-            fileInput: document.getElementById('file-input'),
-            fileInfo: document.getElementById('file-info'),
-            fileName: document.querySelector('.file-name'),
-            removeFile: document.getElementById('remove-file'),
-            analyzeBtn: document.getElementById('analyze-btn'),
-            statusSection: document.getElementById('status-section'),
-            resultSection: document.getElementById('result-section'),
-            jsonOutput: document.getElementById('json-output'),
-            tableView: document.getElementById('table-view'),
-            resultsTableBody: document.querySelector('#results-table tbody'),
-            copyBtn: document.getElementById('copy-json'),
-            downloadJsonBtn: document.getElementById('download-json'),
-            downloadCsvBtn: document.getElementById('download-csv'),
-            progressBar: document.querySelector('.loader-progress'),
-            themeToggle: document.getElementById('theme-toggle'),
-            themeIcon: document.getElementById('theme-icon'),
-            themeText: document.getElementById('theme-text'),
-            chatSection: document.getElementById('chat-section'),
-            chatHistory: document.getElementById('chat-history'),
-            chatInput: document.getElementById('chat-input'),
-            sendChatBtn: document.getElementById('send-chat')
-        };
-
-        // Initial Setup
-        if (state.apiKey) {
-            elements.apiKeyInput.value = state.apiKey;
-        }
-
-        function applyTheme(theme) {
-            if (theme === 'light') {
-                document.body.classList.add('light-theme');
-                elements.themeIcon.textContent = '☀️';
-                elements.themeText.textContent = 'Light Mode';
-            } else {
-                document.body.classList.remove('light-theme');
-                elements.themeIcon.textContent = '🌙';
-                elements.themeText.textContent = 'Dark Mode';
-            }
-        }
-        applyTheme(state.theme);
-
-        // Event Listeners
-        elements.apiKeyInput.addEventListener('input', (e) => {
-            state.apiKey = e.target.value;
-            localStorage.setItem('gemini_api_key', state.apiKey);
-            updateAnalyzeButton();
-        });
-
-        elements.dropZone.addEventListener('click', () => elements.fileInput.click());
-
-        elements.fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(Array.from(e.target.files));
-            }
-        });
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-            elements.dropZone.addEventListener(evt, e => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
-
-        elements.dropZone.addEventListener('dragover', () => elements.dropZone.classList.add('drag-over'));
-        elements.dropZone.addEventListener('dragleave', () => elements.dropZone.classList.remove('drag-over'));
-        elements.dropZone.addEventListener('drop', (e) => {
-            elements.dropZone.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) {
-                handleFileSelect(Array.from(e.dataTransfer.files));
-            }
-        });
-
-        elements.removeFile.addEventListener('click', () => {
-            state.files = [];
-            elements.fileInput.value = '';
-            elements.fileInfo.classList.add('hidden');
-            elements.dropZone.classList.remove('hidden');
-            updateAnalyzeButton();
-        });
-
-        elements.analyzeBtn.addEventListener('click', () => analyzeDocuments());
-
-        elements.copyBtn.addEventListener('click', () => {
-            const text = elements.jsonOutput.textContent;
-            navigator.clipboard.writeText(text);
-            const originalText = elements.copyBtn.textContent;
-            elements.copyBtn.textContent = 'Copied!';
-            setTimeout(() => elements.copyBtn.textContent = originalText, 2000);
-        });
-
-        elements.downloadJsonBtn.addEventListener('click', () => downloadData('json'));
-        elements.downloadCsvBtn.addEventListener('click', () => downloadData('csv'));
-
-        elements.themeToggle.addEventListener('click', () => {
-            state.theme = state.theme === 'dark' ? 'light' : 'dark';
-            applyTheme(state.theme);
-            localStorage.setItem('theme', state.theme);
-        });
-
-        elements.sendChatBtn.addEventListener('click', () => handleChat());
-        elements.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleChat();
-        });
-
-        // Logic
-        function handleFileSelect(files) {
-            state.files = files;
-            elements.fileName.textContent = `${files.length} document(s) ready`;
-            elements.fileInfo.classList.remove('hidden');
-            elements.dropZone.classList.add('hidden');
-            updateAnalyzeButton();
-        }
-
-        function updateAnalyzeButton() {
-            elements.analyzeBtn.disabled = !state.apiKey || state.files.length === 0 || state.isAnalyzing;
-        }
-
-        async function analyzeDocuments() {
-            if (state.isAnalyzing) return;
-            state.isAnalyzing = true;
-            state.results = [];
-            updateAnalyzeButton();
-
-            elements.statusSection.classList.remove('hidden');
-            elements.resultSection.classList.add('hidden');
-            elements.chatSection.classList.add('hidden');
-
-            const genAI = new GoogleGenerativeAI(state.apiKey);
-            const model = genAI.getGenerativeModel({
-                model: "gemini-3-pro-preview",
-                generationConfig: { responseMimeType: "application/json" }
-            });
-
-            try {
-                console.log('Starting analysis for', state.files.length, 'files');
-                for (let i = 0; i < state.files.length; i++) {
-                    const file = state.files[i];
-                    console.log('Analysing file:', file.name);
-                    updateProgress(((i / state.files.length) * 100).toFixed(0), 'parse');
-
-                    const prompt = `System Role: Specialized Legal Parser.
-Task: Analyze the document and extract details using the exact schema below.
-
-JSON Schema:
-{
-  "is_subpoena": boolean,
-  "subpoena_subtype": "string", 
-  "customer_details": {
-    "name": "string",
-    "company": "string",
-    "ssn": "string",
-    "tax_id": "string",
-    "bank_account_number": "string",
-    "dob": "string"
-  },
-  "requestor_information": {
-    "name": "string",
-    "company": "string"
-  }
-}
-
-Return JSON only. If it is not a legal request, return { "is_subpoena": false }.`;
-
-                    const fileData = await fileToGenerativePart(file);
-                    const result = await model.generateContent([prompt, fileData]);
-                    const response = await result.response;
-
-                    // Robust JSON parsing (strip markdown backticks if present)
-                    let text = response.text().trim();
-                    console.log('AI Response for', file.name, ':', text);
-                    if (text.startsWith('```')) {
-                        text = text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/m, '');
-                    }
-                    const data = JSON.parse(text);
-
-                    state.results.push({ name: file.name, data });
-                }
-
-                console.log('Analysis complete. Results:', state.results);
-                renderResults();
-                elements.resultSection.classList.remove('hidden');
-                elements.chatSection.classList.remove('hidden');
-                updateProgress(100, 'done');
-
-                // Bot introduction
-                addChatMessage('ai', `I've finished analyzing ${state.files.length} document(s) using the advanced schema from agent.py. Check the table above for Customer, Company, and Requestor info!`);
-
-                // Auto-scroll to results
-                elements.resultSection.scrollIntoView({ behavior: 'smooth' });
-            } catch (error) {
-                console.error('Analysis error:', error);
-                alert('Analysis failed: ' + error.message);
-            } finally {
-                state.isAnalyzing = false;
-                updateAnalyzeButton();
-                setTimeout(() => elements.statusSection.classList.add('hidden'), 3000);
-            }
-        }
-
-        // Debugging
-        window.appState = state;
-
-        function renderResults() {
-            elements.resultsTableBody.innerHTML = '';
-
-            if (state.results.length === 0) {
-                elements.tableView.classList.add('hidden');
-                elements.jsonOutput.textContent = 'No results could be extracted. Please check your document format.';
-                return;
-            }
-
-            // Always show table for consistency
-            elements.tableView.classList.remove('hidden');
-            state.results.forEach(res => {
-                const row = document.createElement('tr');
-                const details = res.data.is_subpoena ?
-                    `Subtype: ${res.data.subpoena_subtype || 'N/A'}` :
-                    'Non-legal document';
-
-                const customer = res.data.customer_details || {};
-                const requestor = res.data.requestor_information || {};
-                const identifier = customer.tax_id || customer.ssn || 'N/A';
-
-                row.innerHTML = `
-                    <td>${res.name}</td>
-                    <td>${res.data.is_subpoena ? '✅ Subpoena' : '❌ Other'}</td>
-                    <td>${customer.name || 'N/A'}</td>
-                    <td>${customer.company || 'N/A'}</td>
-                    <td>${identifier}</td>
-                    <td>${requestor.name || requestor.company || 'N/A'}</td>
-                    <td>${details}</td>
-                `;
-                elements.resultsTableBody.appendChild(row);
-            });
-
-            // Keep JSON for power users but table is primary
-            elements.jsonOutput.textContent = JSON.stringify(state.results, null, 2);
-        }
-
-        async function handleChat() {
-            const query = elements.chatInput.value.trim();
-            if (!query || state.isAnalyzing) return;
-
-            addChatMessage('user', query);
-            elements.chatInput.value = '';
-
-            const context = JSON.stringify(state.results);
-            const prompt = `You are a legal document assistant. Based on these parsed results: ${context}, answer the following question: ${query}. Be concise and professional. Use formatting if it helps.`;
-
-            const genAI = new GoogleGenerativeAI(state.apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
-
-            try {
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                addChatMessage('ai', response.text());
-            } catch (error) {
-                console.error('Chat error:', error);
-                addChatMessage('ai', 'Sorry, I hit an error: ' + error.message);
-            }
-        }
-
-        function addChatMessage(role, text) {
-            const msg = document.createElement('div');
-            msg.className = `chat-message ${role}`;
-            msg.innerHTML = text.replace(/\n/g, '<br>'); // Simple line break handling
-            elements.chatHistory.appendChild(msg);
-            elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
-        }
-
-        function downloadData(format) {
-            if (state.results.length === 0) return alert('No results to download.');
-
-            const content = format === 'json' ?
-                JSON.stringify(state.results, null, 2) :
-                convertToCSV(state.results);
-
-            const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `legal_analysis.${format}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function convertToCSV(results) {
-            const headers = ['File', 'Type', 'Customer', 'Subtype', 'SSN', 'Account', 'DOB'];
-            const rows = results.map(r => [
-                `"${r.name}"`,
-                r.data.is_subpoena ? 'Subpoena' : 'Other',
-                `"${r.data.customer_details?.name || ''}"`,
-                `"${r.data.subpoena_subtype || ''}"`,
-                `"${r.data.customer_details?.ssn || ''}"`,
-                `"${r.data.customer_details?.bank_account_number || ''}"`,
-                `"${r.data.customer_details?.dob || ''}"`
-            ]);
-            return [headers, ...rows].map(row => row.join(',')).join('\n');
-        }
-
-        async function fileToGenerativePart(file) {
-            const base64EncodedDataPromise = new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = (e) => reject(new Error('Failed to read file: ' + e.target.error));
-                reader.readAsDataURL(file);
-            });
-            return {
-                inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
-            };
-        }
-
-        function updateProgress(percent, step) {
-            elements.progressBar.style.width = `${percent}%`;
-            document.querySelectorAll('.step').forEach(el => {
-                if (el.dataset.step === step) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-        }
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
