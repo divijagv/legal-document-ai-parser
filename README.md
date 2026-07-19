@@ -99,6 +99,7 @@ This opens ADK's built-in playground on an agent-picker screen — it's for test
 ## 🧩 Features
 
 - **AI-powered extraction** tuned for legal subpoenas and court orders, covering customer/addressee details, requestor information, case details, and key dates.
+- **Schema-enforced output** — both runtimes use Gemini's structured-output mode (a `responseSchema` in the web app, a Pydantic `output_schema` in the backend), so the model is constrained to return valid JSON in the exact extraction shape rather than free text.
 - **Multi-document support** — analyze several files in one batch; failures on one file don't block the others.
 - **Confidence flagging** — each result is tagged `Verified` or `Needs Review` based on the model's own confidence score.
 - **Masked sensitive fields** — SSNs and account numbers are hidden by default in the detail view.
@@ -119,11 +120,15 @@ This opens ADK's built-in playground on an agent-picker screen — it's for test
 ├── templates/index.html           # Flask template
 ├── static/style.css               # Flask static styling
 ├── legal_parser_agent/
-│   ├── agent.py                     # ADK agent + extraction/validation logic
+│   ├── agent.py                     # ADK agent + schema-enforced extraction
+│   ├── validation.py                # Pure helpers (JSON cleaning, review flagging)
 │   └── .env                         # Local-only API key (gitignored)
+├── tests/                         # Unit tests (run with `uv run pytest`)
+├── .github/workflows/test.yml     # CI: runs the unit tests on every push/PR
 ├── Procfile                       # Render/Heroku process definition
 ├── requirements.txt               # pip dependencies for the Flask backend
-└── pyproject.toml                 # Python dependencies for uv / the CLI
+├── pyproject.toml                 # Python dependencies for uv / the CLI
+└── LICENSE                        # MIT
 ```
 
 ## Disclaimer
