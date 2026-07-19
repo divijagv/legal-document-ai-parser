@@ -23,4 +23,4 @@ jobs:
             publish_branch: gh-pages
             # Only the static web app needs to be public; keep the Flask
             # backend's local-only files out of the published site.
-            exclude_assets: '.github,app.py,main.py,legal_parser_agent,templates,static,tests,Procfile,requirements.txt,pyproject.toml,instructions.txt,.venv,.gitignore'
+            exclude_assets: '.github,app.py,main.py,legal_parser_agent,templates,static,tests,benchmark,Procfile,requirements.txt,pyproject.toml,instructions.txt,.venv,.gitignore'

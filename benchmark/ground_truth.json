@@ -1,0 +1,148 @@
+{
+  "federal_grand_jury_subpoena": {
+    "is_subpoena": true,
+    "subtype_keywords": ["grand jury", "federal", "criminal"],
+    "fields": {
+      "customer_details.name": "John A. Castellano",
+      "customer_details.company": "First Meridian Bank",
+      "customer_details.ssn": "512-44-9876",
+      "customer_details.bank_account_number": "4400123987",
+      "customer_details.dob": null,
+      "case_details.case_number": "26-GJ-0142",
+      "case_details.date_from": "2024-01-01",
+      "case_details.date_to": "2025-06-30",
+      "case_details.due_date": "2026-08-14",
+      "requestor_information.name": "Sarah K. Lindqvist",
+      "requestor_information.state_code": "IL"
+    }
+  },
+  "irs_summons": {
+    "is_subpoena": true,
+    "subtype_keywords": ["irs", "internal revenue", "tax", "summons"],
+    "fields": {
+      "customer_details.name": "Maria Elena Vasquez",
+      "customer_details.company": "Divine Coast Credit Union",
+      "customer_details.ssn": "477-88-1234",
+      "customer_details.bank_account_number": null,
+      "customer_details.dob": "1979-09-14",
+      "case_details.case_number": "IRS-2026-004417",
+      "case_details.date_from": "2023-01-01",
+      "case_details.date_to": "2024-12-31",
+      "case_details.due_date": "2026-09-01",
+      "requestor_information.name": "David Chen",
+      "requestor_information.state_code": "CA"
+    }
+  },
+  "state_ag_subpoena": {
+    "is_subpoena": true,
+    "subtype_keywords": ["attorney general", "consumer protection", "civil investigative", "administrative"],
+    "fields": {
+      "customer_details.name": null,
+      "customer_details.company": "Lone Star Payments LLC",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": "LSP-99120044",
+      "customer_details.dob": null,
+      "case_details.case_number": "CP-2026-0893",
+      "case_details.date_from": "2025-03-01",
+      "case_details.date_to": "2026-06-01",
+      "case_details.due_date": "2026-08-30",
+      "requestor_information.name": "Rachel Nguyen",
+      "requestor_information.state_code": "TX"
+    }
+  },
+  "civil_subpoena_duces_tecum": {
+    "is_subpoena": true,
+    "subtype_keywords": ["civil", "duces tecum"],
+    "fields": {
+      "customer_details.name": "Timothy R. Wong",
+      "customer_details.company": "Golden Gate Savings Bank",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": "88-441209",
+      "customer_details.dob": null,
+      "case_details.case_number": "RG26-118842",
+      "case_details.date_from": "2022-03-01",
+      "case_details.date_to": "2024-03-01",
+      "case_details.due_date": "2026-08-21",
+      "requestor_information.name": "Dana Whitfield",
+      "requestor_information.state_code": "CA"
+    }
+  },
+  "medicaid_fraud_subpoena": {
+    "is_subpoena": true,
+    "subtype_keywords": ["medicaid"],
+    "fields": {
+      "customer_details.name": null,
+      "customer_details.company": "CarePlus Home Health Inc.",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": null,
+      "customer_details.dob": null,
+      "case_details.case_number": "MFCU-26-0331",
+      "case_details.date_from": "2024-07-01",
+      "case_details.date_to": "2026-06-30",
+      "case_details.due_date": "2026-09-15",
+      "requestor_information.name": "Robert Okafor",
+      "requestor_information.state_code": "NY"
+    }
+  },
+  "aps_records_request": {
+    "is_subpoena": true,
+    "subtype_keywords": ["adult protective", "aps", "administrative"],
+    "fields": {
+      "customer_details.name": "Eleanor M. Hastings",
+      "customer_details.company": "Desert Valley Bank",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": "220087431",
+      "customer_details.dob": "1941-03-22",
+      "case_details.case_number": "APS-26-1187",
+      "case_details.date_from": "2025-01-01",
+      "case_details.date_to": "2026-06-01",
+      "case_details.due_date": "2026-08-10",
+      "requestor_information.name": "Linda Tran",
+      "requestor_information.state_code": "AZ"
+    }
+  },
+  "spanish_citacion": {
+    "is_subpoena": true,
+    "subtype_keywords": ["judicial", "civil", "court"],
+    "fields": {
+      "customer_details.name": "Luis F. Morales",
+      "customer_details.company": "Banco del Caribe",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": "7701-445829",
+      "customer_details.dob": null,
+      "case_details.case_number": "CIV-2026-0455",
+      "case_details.date_from": "2024-01-01",
+      "case_details.date_to": "2025-12-31",
+      "case_details.due_date": "2026-09-05",
+      "requestor_information.name": "Carmen I. Delgado",
+      "requestor_information.state_code": "PR"
+    }
+  },
+  "court_order_production": {
+    "is_subpoena": true,
+    "subtype_keywords": ["court order", "order compelling", "federal", "civil"],
+    "fields": {
+      "customer_details.name": null,
+      "customer_details.company": "Pacific Northwest Data Corp.",
+      "customer_details.ssn": null,
+      "customer_details.bank_account_number": "PND-2231-8874",
+      "customer_details.dob": null,
+      "case_details.case_number": "3:26-cv-01922",
+      "case_details.date_from": "2025-02-01",
+      "case_details.date_to": "2026-05-31",
+      "case_details.due_date": "2026-08-25",
+      "requestor_information.name": "Kevin J. Marsh",
+      "requestor_information.state_code": "WA"
+    }
+  },
+  "distractor_invoice": {
+    "is_subpoena": false,
+    "subtype_keywords": [],
+    "fields": {}
+  },
+  "distractor_lease": {
+    "is_subpoena": false,
+    "subtype_keywords": [],
+    "fields": {}
+  }
+}

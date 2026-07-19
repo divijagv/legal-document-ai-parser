@@ -1,0 +1,28 @@
+UNITED STATES DISTRICT COURT
+WESTERN DISTRICT OF WASHINGTON AT SEATTLE
+
+Case No. 3:26-cv-01922
+Harborline Logistics LLC v. Pacific Northwest Data Corp.
+
+ORDER COMPELLING PRODUCTION OF RECORDS
+
+THIS MATTER comes before the Court on Plaintiff's motion to compel. Having considered the motion and the record, the Court ORDERS as follows:
+
+1. Defendant Pacific Northwest Data Corp. shall produce to Plaintiff's counsel all server access logs, account configuration records, and billing records associated with the customer account "harborline_llc" (Account ID: PND-2231-8874).
+
+2. The production shall cover the period from February 1, 2025 through May 31, 2026.
+
+3. Production shall be completed no later than August 25, 2026.
+
+4. Sensitive credentials and unrelated third-party customer data shall be redacted prior to production.
+
+IT IS SO ORDERED.
+
+Dated this 9th day of July, 2026.
+
+/s/ Margaret E. Halloran
+UNITED STATES DISTRICT JUDGE
+
+Presented by:
+Kevin J. Marsh, Attorney for Plaintiff
+Marsh & Bennett LLP, 1201 Third Avenue, Seattle, WA 98101

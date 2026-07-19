@@ -1,0 +1,28 @@
+NORTHWIND OFFICE SUPPLY CO.
+4520 Industrial Parkway, Columbus, OH 43228
+
+INVOICE
+
+Invoice Number: INV-2026-08341
+Invoice Date: July 2, 2026
+Due Date: August 1, 2026
+
+BILL TO:
+Cedar Grove Dental Associates
+118 Main Street
+Dublin, OH 43017
+
+DESCRIPTION                                  QTY     UNIT PRICE     AMOUNT
+Copy paper, letter, 10-ream case              12         $42.00     $504.00
+Toner cartridge, black, HP-compatible          6         $61.50     $369.00
+Ergonomic desk chair, gray                     2        $219.00     $438.00
+File folders, letter, box of 100               8         $14.25     $114.00
+
+                                                     Subtotal:    $1,425.00
+                                                     Sales tax:      $99.75
+                                                     TOTAL DUE:   $1,524.75
+
+Payment terms: Net 30. Please reference the invoice number on your remittance.
+Questions? Contact accounts@northwindsupply.example.com or (614) 555-0142.
+
+Thank you for your business!
