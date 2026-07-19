@@ -105,6 +105,7 @@ This opens ADK's built-in playground on an agent-picker screen — it's for test
 - **Masked sensitive fields** — SSNs and account numbers are hidden by default in the detail view.
 - **Export** — download results as JSON or CSV, or copy to clipboard.
 - **Document assistant** — ask follow-up questions about extracted results in a chat panel.
+- **Accuracy benchmark** — a hand-labeled test corpus and scoring harness in [`benchmark/`](benchmark/) measures per-field extraction accuracy, false positives, and hallucinations. Run it yourself with `uv run python benchmark/run_benchmark.py`.
 
 ## 📁 Project structure
 
