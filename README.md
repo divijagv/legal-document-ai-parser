@@ -1,6 +1,6 @@
 # Legal Document AI Parser
 
-An AI-powered document intelligence tool for extracting structured data from unstructured legal documents — subpoenas, summons, court orders, and similar records requests.
+An AI-powered document intelligence tool for extracting structured data from unstructured legal documents — subpoenas, summons, court orders, and similar records requests, the extraction schema is easy to adapt to other document types.
 
 Drop in a document and get back a structured record: who it's addressed to, what's being requested, the case number, key dates, the requesting party, and a confidence score flagging anything that needs a human to double-check.
 
